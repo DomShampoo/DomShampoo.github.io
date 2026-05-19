@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lumenvera Codex</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0907;
+    --bg-2: #14110d;
+    --bg-3: #1c1814;
+    --panel: #1a1612;
+    --line: #2a2520;
+    --line-2: #3a342d;
+    --ink: #e8e0d2;
+    --ink-dim: #a89c87;
+    --ink-mute: #6b6356;
+    --gold: #c9a559;
+    --gold-dim: #8a6f3a;
+    --crimson: #a83232;
+    --ember: #d9742a;
+    --ash: #6d7585;
+    --accent: var(--gold);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    overflow: hidden;
+  }
+  .serif { font-family: 'Cormorant Garamond', serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  #root { height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── Header ────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--bg-2), var(--bg));
+    padding: 14px 22px;
+    display: flex; align-items: center; gap: 18px;
+    flex-shrink: 0;
+  }
+  .brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+  }
+  .brand .ampers { color: var(--gold); font-style: italic; }
+  .brand-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-top: 2px;
+  }
+  .header-spacer { flex: 1; }
+  .search-box {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 8px 12px;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 13px;
+    width: 320px;
+    transition: border-color .15s;
+  }
+  .search-box:focus { outline: none; border-color: var(--gold-dim); }
+  .search-box::placeholder { color: var(--ink-mute); }
+
+  /* ── Layout ────────────────────────────── */
+  .body { display: flex; flex: 1; overflow: hidden; }
+  aside {
+    width: 280px;
+    border-right: 1px solid var(--line);
+    background: var(--bg-2);
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  main {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+
+  /* ── Sidebar ───────────────────────────── */
+  .nav-section { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .nav-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding: 4px 18px 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-add {
+    background: none; border: 1px solid var(--line-2);
+    color: var(--ink-dim);
+    width: 18px; height: 18px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    transition: all .15s;
+  }
+  .nav-add:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .nav-item {
+    padding: 7px 18px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    color: var(--ink-dim);
+    border-left: 2px solid transparent;
+    transition: all .12s;
+  }
+  .nav-item:hover { background: var(--bg-3); color: var(--ink); }
+  .nav-item.active {
+    background: var(--bg-3);
+    color: var(--ink);
+    border-left-color: var(--gold);
+  }
+  .nav-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .nav-dot.npc { background: var(--gold); }
+  .nav-dot.faction { background: var(--crimson); }
+  .nav-dot.location { background: var(--ash); }
+  .nav-item .nav-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nav-item .nav-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── Main content ──────────────────────── */
+  .empty-state {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: var(--ink-mute);
+    text-align: center;
+    padding: 40px;
+  }
+  .empty-state .glyph {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 80px;
+    color: var(--gold-dim);
+    opacity: 0.4;
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+  .empty-state h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+  }
+
+  .entity-page { max-width: 900px; margin: 0 auto; padding: 36px 48px 80px; }
+
+  .breadcrumb {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .breadcrumb-back {
+    background: none; border: none;
+    color: var(--ink-mute);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .breadcrumb-back:hover { color: var(--gold); }
+
+  .entity-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 24px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 24px;
+    margin-bottom: 28px;
+  }
+  .entity-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 44px;
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .entity-subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--gold);
+    margin-top: 6px;
+    font-weight: 400;
+  }
+  .entity-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    color: var(--ink-dim);
+    padding: 4px 9px;
+    border-radius: 2px;
+  }
+  .tag.gold { color: var(--gold); border-color: var(--gold-dim); }
+  .tag.crimson { color: var(--crimson); border-color: #5a2020; }
+
+  .entity-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .btn {
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    color: var(--ink-dim);
+    padding: 7px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all .15s;
+  }
+  .btn:hover { color: var(--ink); border-color: var(--gold-dim); }
+  .btn.danger:hover { color: var(--crimson); border-color: #5a2020; }
+  .btn.primary { color: var(--gold); border-color: var(--gold-dim); }
+  .btn.primary:hover { background: var(--gold-dim); color: var(--bg); }
+
+  /* ── Section blocks ────────────────────── */
+  .section { margin-bottom: 32px; }
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .section-header h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .section-header .rule {
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .section-body { color: var(--ink); font-size: 14px; line-height: 1.7; }
+  .section-body p { margin-bottom: 10px; }
+  .section-body p:last-child { margin-bottom: 0; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; }
+  .field {
+    display: flex; flex-direction: column;
+    gap: 4px;
+    padding-bottom: 10px;
+    border-bottom: 1px dotted var(--line);
+  }
+  .field-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+  .field-value { color: var(--ink); font-size: 14px; }
+  .field-value.empty { color: var(--ink-mute); font-style: italic; }
+
+  /* ── Relationship chips ─────────────────── */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    border-radius: 2px;
+    padding: 6px 10px 6px 8px;
+    cursor: pointer;
+    transition: all .12s;
+    font-size: 13px;
+  }
+  .chip:hover { border-color: var(--gold-dim); background: var(--bg-2); }
+  .chip-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .chip-dot.npc { background: var(--gold); }
+  .chip-dot.faction { background: var(--crimson); }
+  .chip-dot.location { background: var(--ash); }
+  .chip-name { color: var(--ink); }
+  .chip-rel {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding-left: 8px;
+    border-left: 1px solid var(--line-2);
+  }
+  .chip-rel.allied { color: #6b9c6b; }
+  .chip-rel.rival { color: var(--crimson); }
+  .chip-rel.loyal { color: var(--gold); }
+
+  /* ── Editable fields ─────────────────── */
+  input.edit, textarea.edit, select.edit {
+    background: var(--bg-3);
+    border: 1px solid var(--line-2);
+    color: var(--ink);
+    padding: 7px 10px;
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 2px;
+    width: 100%;
+    line-height: 1.5;
+  }
+  input.edit:focus, textarea.edit:focus, select.edit:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+  textarea.edit { resize: vertical; min-height: 80px; font-family: inherit; }
+  textarea.edit.long { min-height: 200px; }
+  label.field-edit {
+    display: flex; flex-direction: column; gap: 6px;
+  }
+
+  /* ── Modal ─────────────────────────────── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+  .modal h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 26px;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .modal-row { display: flex; gap: 12px; justify-content: flex-end; margin-top: 22px; }
+  .modal-form { display: flex; flex-direction: column; gap: 14px; }
+
+  /* ── Search results ─────────────────────── */
+  .search-results {
+    position: absolute;
+    top: 56px;
+    right: 22px;
+    width: 380px;
+    max-height: 420px;
+    overflow-y: auto;
+    background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    border-radius: 3px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 50;
+  }
+  .search-result {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .search-result:last-child { border-bottom: none; }
+  .search-result:hover { background: var(--bg-3); }
+  .search-result-name { color: var(--ink); }
+  .search-result-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-left: auto;
+  }
+
+  /* ── Misc ──────────────────────────────── */
+  .inline-link {
+    color: var(--gold);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--gold-dim);
+    transition: color .12s;
+  }
+  .inline-link:hover { color: #e0c478; }
+  .quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ink-dim);
+    border-left: 2px solid var(--gold-dim);
+    padding: 4px 0 4px 18px;
+    margin: 4px 0;
+  }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+  .relationship-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 1fr 30px;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--line);
+  }
+  .relationship-row:last-child { border-bottom: none; }
+  .rel-remove {
+    background: none; border: none;
+    color: var(--ink-mute);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+  .rel-remove:hover { color: var(--crimson); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ═══════════════════════════════════════════
+   SEED DATA — Lumenvera campaign bible imports
+   ═══════════════════════════════════════════ */
+const SEED = {
+  npcs: [
+    {
+      id: 'npc-arkan',
+      name: 'Arkan',
+      title: 'The World Ender · The Black Sun',
+      race: 'Unknown (Endless Cold origin)',
+      age: '~20',
+      origin: 'Caves of Agony, Endless Cold',
+      currentLocation: 'loc-endless-cold',
+      status: 'Active — pre-ascension',
+      portrait: '',
+      publicReputation: 'A prophesied figure, whispered of in the Dunes radicals. To most of the world: unknown, or rumor.',
+      trueNature: 'The first conscious cataclysm. Pre-ascension, already the most authentic being in Lumenvera. Will ascend through the Heart in Samyr\'s mine and surpass Devictus.',
+      backstory: `Born in the Endless Cold, in the Caves of Agony, where his tribe had fled from a stronger tribe's attack. His mother fought viciously — killing three attackers — before she fell. The conquering tribe cut him from her corpse.
+
+They considered killing the baby. As the blade descended, a warrior intervened, blood pouring over the child. The child did not cry. His eyes were yellow with a ring of crimson. His skin pale and grey as ash. He reached out and placed a bloody handprint on the side of his would-be executioner's face.
+
+The tribe agreed to raise him as a warrior and a saviour. He grew at an impossible rate — walking within weeks, speaking in sentences by three months. His logic exceeded the wisest elder. His combat surpassed the chieftain. He took up sculpting, painting, writing — his eye for art was extraordinary.
+
+He did not care.
+
+In the night, he slit the throats of his caretakers and burned the village to the ground. He left a single survivor — the one he had marked with a handprint at birth — only after burning off the side of his face. He did not do this from hatred or trauma. He killed them because accepting their love as the point would have been the only betrayal that mattered. He burned the village because staying would have been the lie.`,
+      ambitions: 'Touch the Heart in Samyr\'s mine. Ascend. Tear down the world at its peak so it may regrow superior. Repeat the cycle, this time surviving to guide it. One thousand times if necessary — until Heaven is achieved.',
+      motivations: 'Only through death may we be reborn. Growth requires rebirth. The proof of his thesis is the ground beneath everyone\'s feet — Lumenvera itself was created through destruction.',
+      fears: 'None known. Fearlessness is foundational to his nature.',
+      values: 'Authenticity above all else. Purification through annihilation. Concentrated, undivided will.',
+      voiceNotes: 'Quiet. Measured. Genuine gratitude in his yellow eyes when he sees others becoming themselves — even his enemies, especially his enemies.',
+      capabilities: `Pre-ascension: supernatural intelligence, intuition, and growth rates without explanation. Mind-bogglingly talented combatant for his age or any age. Not done becoming what he is.
+
+Post-ascension (Black Sun — Passive): becomes a condition. A Vera black hole. Reality near him behaves wrong. The world dims in his presence. Produces Hollowed in waves wherever he moves. Cities he passes through hollow out behind him.
+
+Post-ascension (Inevitability — Active): when he commits to an action, reality conforms to its completion. He raises a blade and the cut has already happened. The universe is just catching up.`,
+      secretsKnown: 'The true nature of the Heart and what cycles of destruction produce. His own origin and the prophecy. The location of the Heart in Samyr\'s mine.',
+      wealthTier: 'None / irrelevant',
+      itemsCarried: '',
+      itemsOwned: '',
+      estates: '',
+      pcStanding: 0,
+      pcHistory: '',
+      tags: ['villain', 'ascended-track', 'cycle-6'],
+    },
+    {
+      id: 'npc-devictus',
+      name: 'Devictus Samyra',
+      title: 'The Usurper · The Savior',
+      race: 'Human (ascended)',
+      age: '~30,000+',
+      origin: 'Samyr',
+      currentLocation: 'loc-sunael',
+      status: 'Ruling — present day',
+      publicReputation: 'The world\'s living legend. The man who ended the War of Ascension. Thirty thousand years of peace on the back of one immortal man.',
+      trueNature: 'The first ascended being. His goodness has calcified over thirty millennia into something the players will find harder to read than expected. He should not feel like a hero when he arrives at the climax.',
+      backstory: `Soldier. Wizard. Genius. Military mastermind. The first person in known history to complete the ritual of Ascension and survive it.
+
+His body transformed. His greatsword became the Usurper's Edge of Infinity. Through it he accessed Infinity: the power to cut temporary holes through space itself, drawing the cosmos through his blade.
+
+With it he ended the War of Ascension single-handedly. Decimated armies. Sank fleets. Made twenty thousand years of conflict trivial in months.
+
+He returned home. The continent and kingdom were named after him. He has ruled for thirty thousand years.`,
+      ambitions: 'Unification. Protection. The continuation of the world he saved. After thirty millennia, the precise shape of what he still wants is unclear — even to him.',
+      motivations: 'Determination to save. His will points outward — toward protection, toward ending suffering at scale.',
+      fears: 'Loss of control over the Force of Ascension. An ascension he did not authorize.',
+      values: 'Order. Mercy as policy. The good of mankind as he defines it.',
+      voiceNotes: 'The weight of millennia. Speaks like someone who has had this conversation before.',
+      capabilities: `Infinity — cuts temporary holes through space, drawing the cosmos through his blade. The Usurper's Edge of Infinity is his bonded weapon.
+
+Has not been challenged in thirty thousand years. The ceiling of power in Lumenvera. Until Arkan.`,
+      secretsKnown: 'The true relationship between the Force of Ascension and the six Hearts (deferred — to be locked). Every ascension that has occurred under his rule. What thirty thousand years has done to him.',
+      wealthTier: 'A nation\'s wealth',
+      itemsCarried: 'item-usurpers-edge',
+      itemsOwned: '',
+      estates: '',
+      pcStanding: 0,
+      pcHistory: '',
+      tags: ['ascended', 'samyr', 'ruler', 'climax-pivot'],
+    },
+    {
+      id: 'npc-atraxa',
+      name: 'Atraxa',
+      title: 'The Spirit of Rage · The Avenger',
+      race: 'Ascended (former Priestess)',
+      age: 'Predates Devictus by an unknown span',
+      origin: 'A kingdom long since forgotten (Dunes region)',
+      currentLocation: '',
+      status: 'Walks the world — appears only where stories require an ending bigger than a normal death',
+      publicReputation: 'Myth. Folktale. A flaming skeleton spoken of in old Dunes stories. Most consider her allegory.',
+      trueNature: 'The existence proof of the third path. Her ascension came from no Heart, no crystal, no ritual — only Vera responding directly to a will the universe could not refuse. The Covenant\'s doctrine is built, knowingly or unknowingly, on what she demonstrated.',
+      backstory: `She lived as a Priestess of a forgotten kingdom. Devout by necessity — the alternative was slavery and torture for her and her children. She prayed every day. Sacrificed more of her life than any reasonable person could to a god she had no choice but to serve.
+
+When her kingdom fell, her children were slaughtered in front of her. Her daughter was personally impaled. Her son was crushed by oncoming artillery. In that moment, she felt something so total her god could not contain it. She denounced him. She swore that if she ever saw him, she would kill him herself.
+
+The hatred manifested. Her body burned away — skin peeling, muscle melting — leaving a flaming skeleton and a spear made of pure unbridled rage. She became Atraxa. She obliterated armies. She leveled cities. She showed no mercy across hundreds of miles. The scorch marks burnt into the Dunes still remain.
+
+When there was nothing left to kill, her fire extinguished. She did not die — she could not. She walks the world still, granting the ember of her rage to those whose stories require an ending bigger than a normal death.`,
+      ambitions: 'Find the right story for her flame. Witness one last act of vengeance she can pour herself into.',
+      motivations: 'Rage that outlived her body. A mother\'s vengeance held in trust across centuries.',
+      fears: 'None remain. She is what is left after fear has burned away.',
+      values: 'Authenticity. Endings that mean something. The right vessel for borrowed flame.',
+      voiceNotes: 'Sparse. Maternal in a way that does not soften anything. Calls those she chooses "my child."',
+      capabilities: 'Ascended being. Spear of rage. Flame skeleton. Can grant the seed of her flame to a mortal — the Beast of Hatred, which burns the vessel completely when invoked. She put one such piece into Athelios.',
+      secretsKnown: 'The third path to power. Her visit to Athelios. The cost of the flame she lent him.',
+      wealthTier: 'Irrelevant',
+      itemsCarried: '',
+      itemsOwned: '',
+      estates: '',
+      pcStanding: 0,
+      pcHistory: '',
+      tags: ['ascended', 'avenger', 'third-path', 'covenant-doctrine'],
+    },
+    {
+      id: 'npc-athelios',
+      name: 'Athelios Eterno',
+      title: 'The Witness',
+      race: 'Human',
+      age: '~70+',
+      origin: 'Solian Covenant',
+      currentLocation: 'loc-dunes',
+      status: 'Alive — held in escrow for a specific future event',
+      publicReputation: 'The strongest human alive. Legend within the Covenant. A name spoken with reverence and quiet dread.',
+      trueNature: 'Not the party\'s mentor — their witness. The most honest person they will ever meet. He has already died once. The campaign catches him at the end of his usefulness.',
+      backstory: `Born and raised in the Solian Covenant. Trained brutally from childhood. Learned faster than anyone of his generation. By fourteen, fought alongside adult soldiers in the deep Dunes. Youngest person in known history to slay a Sand Wyrm.
+
+By eighteen, hired into the Covenant's special forces. A finisher. A demolitionist. The last thing any enemy of the Covenant ever saw. By twenty-five, personal bodyguard to Akshena Lilea.
+
+A decade later, the Schism. The faithful broke from the Covenant's doctrine, swayed by the Oracle Jidea's prophecy of a God-Slayer. They subdued Athelios with a Wyrm elixir, locked him in a dungeon. For decades they tried to shatter his mind. They found a parasite that neutralized his amygdala. He lost his memory. Lost the ability to feel. Became feral, mindless, and devastatingly powerful — a tool with twin blades and no restraint.
+
+They unleashed him on the Covenant. He slaughtered his way through his old elite squad. Two remained: Dieta and Duran. He decapitated Duran. He and Dieta — his teacher — fought for nearly twelve minutes. Athelios impaled Dieta. Dieta drove a dagger through Athelios's temple. The parasite died. So did Athelios.
+
+A woman entered the room as Dieta bled out. He saw only a silhouette. "Thank you, Dieta. Now you are free. But his story has not finished yet. He has yet to earn rest. Close your eyes now."
+
+Dieta passed. Athelios was resurrected. The parasite was gone. The wound was closed. Atraxa had put a piece of her ascension in his chest — the seed of her flame.
+
+He returned to the Covenant. The rebellion turned. The radicals fled into the Dunes and have not been seen since.`,
+      ambitions: 'To die correctly. Dieta\'s death was not his to take — he was a tool when it happened. He owes a death that is actually his own.',
+      motivations: 'A debt of selfhood, paid in a single correct ending.',
+      fears: 'Dying wrong. Dying as anyone other than himself.',
+      values: 'Earned selfhood. Honesty. Choosing the moment of your own ending.',
+      voiceNotes: 'Sparse. Modeled tonally on the Skull Knight from Berserk. Says one thing the party will remember for the rest of their lives, then leaves before answers arrive.',
+      capabilities: `Strongest human alive. Not stronger than an ascended demigod — the gap is not crossable. Can fight Devictus\'s lieutenants. Cannot fight Devictus or what Arkan becomes.
+
+The Beast of Hatred — Atraxa\'s flame in his chest. A massive flaming wolf. When invoked, it burns the vessel completely. Atraxa\'s gift is that you go out as a star. The cost is you go out all the way.`,
+      secretsKnown: 'That he has been waiting forty years for a specific story. That Atraxa is real. That his ending is coming and is not ordinary.',
+      wealthTier: 'Sufficient',
+      itemsCarried: 'Twin blades',
+      itemsOwned: '',
+      estates: '',
+      pcStanding: 0,
+      pcHistory: '',
+      tags: ['covenant', 'witness', 'flame-bearer', 'sacrificial'],
+    },
+    {
+      id: 'npc-akshena',
+      name: 'Akshena Lilea',
+      title: 'Leader of the Solian Covenant',
+      race: '',
+      age: '',
+      origin: 'Solian Covenant',
+      currentLocation: 'loc-dunes',
+      status: 'To be developed — alive or not is undecided',
+      publicReputation: '',
+      trueNature: '',
+      backstory: 'Leader of the Covenant during the Schism and Athelios\'s era as her personal bodyguard. Her current state, relationship with Athelios in the present, and role in the party\'s arc through the Covenant\'s doctrine are deliberately unresolved.',
+      ambitions: '',
+      motivations: '',
+      fears: '',
+      values: '',
+      voiceNotes: '',
+      capabilities: '',
+      secretsKnown: '',
+      wealthTier: '',
+      itemsCarried: '',
+      itemsOwned: '',
+      estates: '',
+      pcStanding: 0,
+      pcHistory: '',
+      tags: ['stub', 'covenant', 'open-thread'],
+    },
+    {
+      id: 'npc-jidea',
+      name: 'Oracle Jidea',
+      title: 'The Oracle',
+      race: '',
+      age: '',
+      origin: 'Solian Covenant',
+      currentLocation: '',
+      status: 'Historical — status in present unclear',
+      backstory: 'The Oracle whose prophecy of the God-Slayer triggered the Covenant Schism. The prophecy stated a man would rise from great turmoil, fight through the Samyrian military, slay their king, and ascend into godhood — and only then would the Dunes be saved.',
+      capabilities: 'Prophecy.',
+      tags: ['stub', 'covenant', 'prophecy'],
+    },
+    {
+      id: 'npc-dieta',
+      name: 'Dieta',
+      title: 'The Teacher',
+      race: 'Human',
+      origin: 'Solian Covenant',
+      currentLocation: '',
+      status: 'Deceased',
+      backstory: 'Athelios\'s teacher. Taught him everything he knew. Survived the parasite-driven Athelios\'s rampage for nearly twelve minutes alongside Duran. Impaled by Athelios. As he bled out, drove a dagger through Athelios\'s temple — killing the parasite and Athelios both. Witnessed Atraxa\'s silhouette in his final moments. Atraxa thanked him for setting Athelios free.',
+      tags: ['historical', 'covenant', 'deceased'],
+    },
+    {
+      id: 'npc-duran',
+      name: 'Duran',
+      title: '',
+      race: 'Human',
+      origin: 'Solian Covenant',
+      status: 'Deceased — decapitated by Athelios under parasite control',
+      backstory: 'One of the two members of Athelios\'s elite squad to survive longest during his rampage. Decapitated by Athelios.',
+      tags: ['historical', 'covenant', 'deceased', 'stub'],
+    },
+  ],
+  factions: [
+    {
+      id: 'fac-samyr',
+      name: 'Samyr',
+      sigil: '',
+      headquarters: 'loc-sunael',
+      publicFace: 'The Heartland. Civilization\'s peak. The continent that ended the War of Ascension and built thirty thousand years of peace.',
+      stated: 'Order. Continuity. The good of mankind.',
+      trueGoals: 'Approaching its golden age on the back of a system that works by filing down the sharpest edges of its people. Comfortable. Optimized. Increasingly unable to respond to anything that cannot be processed through committee.',
+      methods: 'Bureaucracy. Mercy as policy. Optimization. The most genuinely good society Lumenvera has produced — and the one least equipped to respond when the Heart\'s discovery changes everything.',
+      taboos: '',
+      leadership: 'npc-devictus',
+      structureNotes: 'Hierarchical. Devictus at the apex, with permitted ascended lieutenants beneath.',
+      territory: 'The Temperate Heartland. Capital at Sunael.',
+      treasury: 'Imperial',
+      military: 'The largest standing force in Lumenvera. Not the finest — that is the Covenant.',
+      assets: '',
+      clocks: '',
+      pcStanding: 0,
+      tags: ['nation', 'heartland', 'order'],
+    },
+    {
+      id: 'fac-covenant',
+      name: 'Solian Covenant',
+      sigil: '',
+      headquarters: 'loc-dunes',
+      publicFace: 'The Dunes. Spartan meritocracy. The people who were the world\'s contested ground for twenty thousand years and refused to break.',
+      stated: 'You are nothing you haven\'t earned. And everything you\'ve earned is yours absolutely.',
+      trueGoals: 'A long, slow, intergenerational argument against the legitimacy of bestowed power. Earned selfhood, not granted godhood. The only faction that has been consciously waiting for the next Devictus — for thirty thousand years.',
+      methods: 'Trial. Suffering as curriculum. Genuine fair dealing and absolute ruthlessness simultaneously.',
+      taboos: 'Comfort as identity. Bestowed power. Inherited privilege.',
+      leadership: 'npc-akshena',
+      structureNotes: 'Meritocratic oligarchy. The Council of Dust — proven across multiple domains. You are recognized for a seat, not elected to one.',
+      territory: 'The Dunes.',
+      treasury: 'Lean — built on scarcity as a feature. Water is the foundation of all Solian political and economic power.',
+      military: 'The finest in Lumenvera by a significant margin. Not the largest — the finest. Every soldier a volunteer who passed trials most armies wouldn\'t survive.',
+      assets: '',
+      clocks: '',
+      pcStanding: 0,
+      tags: ['nation', 'desert', 'meritocracy', 'third-path-source'],
+    },
+    {
+      id: 'fac-faithful',
+      name: 'The Faithful Radicals',
+      sigil: '',
+      headquarters: '',
+      publicFace: 'Believed extinct by most. A fringe story.',
+      stated: 'The God-Slayer prophecy. The Savior of the Dunes will come.',
+      trueGoals: 'They have been waiting for their prophesied savior for decades. When Arkan ascends, he will look exactly like the prophecy described. They will follow him.',
+      methods: 'Patience. Watching. Hidden in the deep Dunes.',
+      leadership: '',
+      structureNotes: 'Survivors of the Covenant Schism who fled into the Dunes and have not been seen since.',
+      territory: 'Deep Dunes — exact location unknown.',
+      treasury: '',
+      military: '',
+      assets: '',
+      clocks: '',
+      pcStanding: 0,
+      tags: ['stub', 'cult', 'open-thread', 'arkan-aligned'],
+    },
+    {
+      id: 'fac-arkan-host',
+      name: 'The Hollowed Host',
+      sigil: '',
+      headquarters: '',
+      publicFace: 'Will not exist as a known force until Arkan moves openly.',
+      stated: 'None. They cannot speak meaningfully.',
+      trueGoals: 'They are not loyal. They are pulled. Empty things drawn to the densest thing in the world.',
+      methods: 'Proximity. Inevitability.',
+      leadership: 'npc-arkan',
+      structureNotes: 'Not an army in any conventional sense. The Black Sun produces the Hollowed in waves wherever Arkan moves. Cities he passes through hollow out behind him.',
+      territory: 'Wherever Arkan has been. Expanding.',
+      treasury: '',
+      military: 'Numbers grow with every village he passes.',
+      assets: '',
+      clocks: 'The Black Sun Expansion — the world dies ahead of his arrival, not just at his location. An accelerating clock.',
+      pcStanding: 0,
+      tags: ['endgame', 'arkan-aligned', 'existential-threat'],
+    },
+  ],
+  locations: [
+    {
+      id: 'loc-samyr',
+      name: 'Samyr',
+      kind: 'Continent',
+      parent: '',
+      region: 'Temperate Heartland',
+      description: 'The Heartland. The continent named after Devictus Samyra after he ended the War of Ascension. Mythologically grounded as the body of an Ancient.',
+      currentState: 'Approaching its golden age. The Heart has been found in one of its mines.',
+      pcKnown: '',
+      tags: ['continent', 'heartland'],
+    },
+    {
+      id: 'loc-sunael',
+      name: 'Sunael',
+      kind: 'City — Capital',
+      parent: 'loc-samyr',
+      region: 'Temperate Heartland',
+      description: 'Capital of Samyr. Placement within the Heartland not yet finalized.',
+      currentState: 'Center of Devictus\'s rule.',
+      pcKnown: '',
+      tags: ['capital', 'samyr', 'placement-pending'],
+    },
+    {
+      id: 'loc-dunes',
+      name: 'The Dunes / Idris',
+      kind: 'Continent',
+      parent: '',
+      region: 'Dunes',
+      description: 'The contested ground. The desert that was the slaughterhouse of the War of Ascension. Home of the Solian Covenant. Mythologically the body of Idris.',
+      currentState: 'Stable under the Covenant. The faithful radicals are still out there somewhere.',
+      pcKnown: '',
+      tags: ['continent', 'covenant'],
+    },
+    {
+      id: 'loc-endless-cold',
+      name: 'The Endless Cold / Aurelia',
+      kind: 'Continent',
+      parent: '',
+      region: 'Endless Cold',
+      description: 'The frozen continent. Tribal. Lost to Devictus in the War of Ascension. Home of the Caves of Agony where Arkan was born.',
+      currentState: 'Underdeveloped — flagged for future faction work.',
+      pcKnown: '',
+      tags: ['continent', 'underdeveloped', 'arkan-origin'],
+    },
+    {
+      id: 'loc-jungle',
+      name: 'The Jungle Continent / Lothra & Gwyn',
+      kind: 'Continent',
+      parent: '',
+      region: 'Jungle',
+      description: 'The jungle continent. Lost to Devictus in the War of Ascension. Mythologically the bodies of Lothra and Gwyn.',
+      currentState: 'Underdeveloped — flagged for future faction work.',
+      pcKnown: '',
+      tags: ['continent', 'underdeveloped'],
+    },
+    {
+      id: 'loc-caves-agony',
+      name: 'Caves of Agony',
+      kind: 'Site',
+      parent: 'loc-endless-cold',
+      region: 'Endless Cold',
+      description: 'The site of Arkan\'s birth. His tribe fled here from a stronger tribe\'s attack. His mother killed three attackers before falling. The conquering tribe cut him from her corpse.',
+      currentState: 'Likely abandoned — every village Arkan touched as a child was burned.',
+      pcKnown: '',
+      tags: ['arkan-origin', 'historical'],
+    },
+    {
+      id: 'loc-heart-mine',
+      name: 'The Heart Mine',
+      kind: 'Site',
+      parent: 'loc-samyr',
+      region: 'Temperate Heartland',
+      description: 'The mine in Samyr where the Heart was discovered in 1498 P.A. The first Pulse went out from this soil.',
+      currentState: 'Active. Devictus does not yet know what has been found here.',
+      pcKnown: '',
+      tags: ['endgame', 'heart', 'samyr'],
+    },
+    {
+      id: 'loc-force-ascension',
+      name: 'The Force of Ascension',
+      kind: 'Site',
+      parent: 'loc-dunes',
+      region: 'Dunes',
+      description: 'An ancient temple deep in the Dunes containing the Force of Ascension — a crystal that promised the most powerful form of any person who could survive the ritual. The Dunes were the battleground for twenty thousand years over its possession.',
+      currentState: 'Still controlled by Devictus. He approves candidates personally.',
+      pcKnown: '',
+      tags: ['ascension', 'open-thread'],
+    },
+    {
+      id: 'loc-ocean-avery',
+      name: 'Ocean of Avery',
+      kind: 'Ocean',
+      parent: '',
+      region: 'Sea',
+      description: 'One of the two great oceans.',
+      tags: ['ocean'],
+    },
+    {
+      id: 'loc-ocean-evelyn',
+      name: 'Ocean of Evelyn',
+      kind: 'Ocean',
+      parent: '',
+      region: 'Sea',
+      description: 'One of the two great oceans.',
+      tags: ['ocean'],
+    },
+  ],
+  items: [
+    {
+      id: 'item-usurpers-edge',
+      name: "The Usurper's Edge of Infinity",
+      kind: 'Unique weapon',
+      owner: 'npc-devictus',
+      description: 'Devictus Samyra\'s signature greatsword, transformed at the moment of his ascension. Through it he accesses Infinity — the power to cut temporary holes through space, drawing the cosmos through his blade.',
+      tags: ['ascended', 'unique', 'samyr'],
+    },
+  ],
+  relationships: [
+    { id: 'r-1', from: 'npc-arkan', to: 'fac-arkan-host', type: 'commands', disposition: 100 },
+    { id: 'r-2', from: 'npc-devictus', to: 'fac-samyr', type: 'rules', disposition: 100 },
+    { id: 'r-3', from: 'npc-athelios', to: 'fac-covenant', type: 'serves', disposition: 100 },
+    { id: 'r-4', from: 'npc-athelios', to: 'npc-akshena', type: 'former-bodyguard-of', disposition: 80 },
+    { id: 'r-5', from: 'npc-athelios', to: 'npc-atraxa', type: 'flame-bearer-of', disposition: 100 },
+    { id: 'r-6', from: 'npc-athelios', to: 'npc-dieta', type: 'mourns', disposition: 100 },
+    { id: 'r-7', from: 'npc-akshena', to: 'fac-covenant', type: 'leads', disposition: 100 },
+    { id: 'r-8', from: 'npc-arkan', to: 'npc-devictus', type: 'will-surpass', disposition: -20 },
+    { id: 'r-9', from: 'fac-faithful', to: 'npc-arkan', type: 'will-follow', disposition: 100 },
+    { id: 'r-10', from: 'fac-faithful', to: 'fac-covenant', type: 'split-from', disposition: -80 },
+    { id: 'r-11', from: 'fac-covenant', to: 'fac-samyr', type: 'philosophical-rejection-of', disposition: -50 },
+    { id: 'r-12', from: 'npc-atraxa', to: 'fac-covenant', type: 'unwitting-foundation-of', disposition: 40 },
+  ],
+};
+
+const RELATIONSHIP_TYPES = [
+  'allied','rival','loyal-to','serves','leads','rules','commands','mentor-of',
+  'student-of','parent-of','child-of','sibling','lover','married','betrayed-by',
+  'betrayed','indebted-to','debtor','employer','employed-by','split-from',
+  'will-follow','will-surpass','flame-bearer-of','mourns','former-bodyguard-of',
+  'philosophical-rejection-of','unwitting-foundation-of','member-of','founded',
+  'owns','controls','contested-by','custom'
+];
+
+/* ═══════════════════════════════════════════
+   STORAGE
+   ═══════════════════════════════════════════ */
+const STORAGE_KEY = 'lumenvera-codex-v1';
+
+function loadData() {
+  try {
+    const v = localStorage.getItem(STORAGE_KEY);
+    return v ? JSON.parse(v) : null;
+  } catch { return null; }
+}
+function saveData(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) { console.error('Save failed:', e); }
+}
+
+/* ═══════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════ */
+const uid = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+const typeOf = (id) => id.startsWith('npc-') ? 'npc' : id.startsWith('fac-') ? 'faction' : id.startsWith('loc-') ? 'location' : id.startsWith('item-') ? 'item' : 'unknown';
+
+/* ═══════════════════════════════════════════
+   APP
+   ═══════════════════════════════════════════ */
+function App() {
+  const [data, setData] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [search, setSearch] = useState('');
+  const [history, setHistory] = useState([]);
+
+  // Load on mount
+  useEffect(() => {
+    const loaded = loadData();
+    setData(loaded || SEED);
+  }, []);
+
+  // Save on data change
+  useEffect(() => {
+    if (data) saveData(data);
+  }, [data]);
+
+  const allEntities = useMemo(() => {
+    if (!data) return [];
+    return [
+      ...data.npcs.map(e => ({ ...e, _type: 'npc' })),
+      ...data.factions.map(e => ({ ...e, _type: 'faction' })),
+      ...data.locations.map(e => ({ ...e, _type: 'location' })),
+    ];
+  }, [data]);
+
+  const findEntity = (id) => allEntities.find(e => e.id === id);
+
+  const goTo = (id) => {
+    if (selectedId && selectedId !== id) {
+      setHistory(prev => [...prev, selectedId]);
+    }
+    setSelectedId(id);
+    setEditMode(false);
+  };
+
+  const goBack = () => {
+    if (history.length === 0) { setSelectedId(null); return; }
+    const prev = history[history.length - 1];
+    setHistory(history.slice(0, -1));
+    setSelectedId(prev);
+    setEditMode(false);
+  };
+
+  const updateEntity = (id, updates) => {
+    const t = typeOf(id);
+    const key = t === 'npc' ? 'npcs' : t === 'faction' ? 'factions' : t === 'location' ? 'locations' : 'items';
+    setData(prev => ({
+      ...prev,
+      [key]: prev[key].map(e => e.id === id ? { ...e, ...updates } : e),
+    }));
+  };
+
+  const deleteEntity = (id) => {
+    const t = typeOf(id);
+    const key = t === 'npc' ? 'npcs' : t === 'faction' ? 'factions' : t === 'location' ? 'locations' : 'items';
+    setData(prev => ({
+      ...prev,
+      [key]: prev[key].filter(e => e.id !== id),
+      relationships: prev.relationships.filter(r => r.from !== id && r.to !== id),
+    }));
+    setSelectedId(null);
+  };
+
+  const createEntity = (type, name) => {
+    const prefix = type === 'npc' ? 'npc' : type === 'faction' ? 'fac' : 'loc';
+    const id = uid(prefix);
+    const key = type === 'npc' ? 'npcs' : type === 'faction' ? 'factions' : 'locations';
+    const stub = { id, name, tags: [] };
+    setData(prev => ({ ...prev, [key]: [...prev[key], stub] }));
+    setSelectedId(id);
+    setEditMode(true);
+  };
+
+  const upsertRelationship = (rel) => {
+    setData(prev => ({
+      ...prev,
+      relationships: rel.id
+        ? prev.relationships.map(r => r.id === rel.id ? rel : r)
+        : [...prev.relationships, { ...rel, id: uid('r') }],
+    }));
+  };
+  const deleteRelationship = (relId) => {
+    setData(prev => ({
+      ...prev,
+      relationships: prev.relationships.filter(r => r.id !== relId),
+    }));
+  };
+
+  const selected = selectedId ? findEntity(selectedId) : null;
+
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.toLowerCase();
+    return allEntities.filter(e => {
+      const hay = [e.name, e.title, (e.tags || []).join(' '), e.backstory || '', e.description || ''].join(' ').toLowerCase();
+      return hay.includes(q);
+    }).slice(0, 12);
+  }, [search, allEntities]);
+
+  if (!data) return <div style={{padding: 40, color: 'var(--ink-mute)'}}>Loading codex…</div>;
+
+  return (
+    <>
+      <header>
+        <div>
+          <div className="brand">Lumenvera <span className="ampers">·</span> Codex</div>
+          <div className="brand-sub">A Living World</div>
+        </div>
+        <div className="header-spacer" />
+        <input
+          className="search-box"
+          placeholder="Search NPCs, factions, locations…"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        {search && searchResults.length > 0 && (
+          <div className="search-results">
+            {searchResults.map(r => (
+              <div key={r.id} className="search-result" onClick={() => { goTo(r.id); setSearch(''); }}>
+                <div className={`nav-dot ${r._type}`} />
+                <div className="search-result-name">{r.name}</div>
+                <div className="search-result-type">{r._type}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </header>
+
+      <div className="body">
+        <Sidebar
+          data={data}
+          selectedId={selectedId}
+          onSelect={goTo}
+          onCreate={(type) => setModal({ kind: 'create', type })}
+        />
+        <main>
+          {!selected ? (
+            <EmptyState />
+          ) : (
+            <EntityPage
+              entity={selected}
+              data={data}
+              findEntity={findEntity}
+              editMode={editMode}
+              setEditMode={setEditMode}
+              onUpdate={updateEntity}
+              onDelete={() => setModal({ kind: 'confirm-delete', id: selected.id, name: selected.name })}
+              onNavigate={goTo}
+              onBack={goBack}
+              canGoBack={history.length > 0}
+              upsertRelationship={upsertRelationship}
+              deleteRelationship={deleteRelationship}
+            />
+          )}
+        </main>
+      </div>
+
+      {modal && (
+        <Modal onClose={() => setModal(null)}>
+          {modal.kind === 'create' && (
+            <CreateForm
+              type={modal.type}
+              onCreate={(name) => { createEntity(modal.type, name); setModal(null); }}
+              onCancel={() => setModal(null)}
+            />
+          )}
+          {modal.kind === 'confirm-delete' && (
+            <ConfirmDelete
+              name={modal.name}
+              onConfirm={() => { deleteEntity(modal.id); setModal(null); }}
+              onCancel={() => setModal(null)}
+            />
+          )}
+        </Modal>
+      )}
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════ */
+function Sidebar({ data, selectedId, onSelect, onCreate }) {
+  return (
+    <aside>
+      <NavSection
+        title="NPCs"
+        kind="npc"
+        items={[...data.npcs].sort((a,b) => a.name.localeCompare(b.name))}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onAdd={() => onCreate('npc')}
+      />
+      <NavSection
+        title="Factions"
+        kind="faction"
+        items={[...data.factions].sort((a,b) => a.name.localeCompare(b.name))}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onAdd={() => onCreate('faction')}
+      />
+      <NavSection
+        title="Locations"
+        kind="location"
+        items={[...data.locations].sort((a,b) => a.name.localeCompare(b.name))}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onAdd={() => onCreate('location')}
+      />
+    </aside>
+  );
+}
+
+function NavSection({ title, kind, items, selectedId, onSelect, onAdd }) {
+  return (
+    <div className="nav-section">
+      <div className="nav-header">
+        <span>{title} · {items.length}</span>
+        <button className="nav-add" onClick={onAdd} title={`Add ${title.slice(0,-1)}`}>+</button>
+      </div>
+      {items.map(item => (
+        <div
+          key={item.id}
+          className={`nav-item ${selectedId === item.id ? 'active' : ''}`}
+          onClick={() => onSelect(item.id)}
+        >
+          <div className={`nav-dot ${kind}`} />
+          <span className="nav-name">{item.name}</span>
+          {(item.tags || []).includes('stub') && <span className="nav-meta">stub</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════ */
+function EmptyState() {
+  return (
+    <div className="empty-state">
+      <div className="glyph">✦</div>
+      <h2>Select an entity to inspect.</h2>
+      <p>Click any NPC, faction, or location in the sidebar.<br/>Everything is linked. Click through to wander the world.</p>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   ENTITY PAGE
+   ═══════════════════════════════════════════ */
+function EntityPage({ entity, data, findEntity, editMode, setEditMode, onUpdate, onDelete, onNavigate, onBack, canGoBack, upsertRelationship, deleteRelationship }) {
+  const t = typeOf(entity.id);
+  const update = (field, value) => onUpdate(entity.id, { [field]: value });
+
+  return (
+    <div className="entity-page">
+      <div className="breadcrumb">
+        {canGoBack && <button className="breadcrumb-back" onClick={onBack}>← back</button>}
+        {canGoBack && <span>·</span>}
+        <span>{t.toUpperCase()}</span>
+        {entity.tags && entity.tags.includes('stub') && <span style={{color: 'var(--ember)'}}>· STUB</span>}
+      </div>
+
+      <div className="entity-header">
+        <div style={{flex: 1}}>
+          {editMode ? (
+            <>
+              <input className="edit serif" style={{fontSize: 32, fontWeight: 500, background: 'transparent', border: '1px dashed var(--line-2)'}} value={entity.name} onChange={e => update('name', e.target.value)} />
+              <input className="edit" style={{marginTop: 8, color: 'var(--gold)', fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif', fontSize: 17, background: 'transparent', border: '1px dashed var(--line-2)'}} value={entity.title || ''} placeholder="Title / epithet" onChange={e => update('title', e.target.value)} />
+            </>
+          ) : (
+            <>
+              <div className="entity-title">{entity.name}</div>
+              {entity.title && <div className="entity-subtitle">{entity.title}</div>}
+            </>
+          )}
+          <div className="entity-tags">
+            <span className={`tag ${t === 'npc' ? 'gold' : t === 'faction' ? 'crimson' : ''}`}>{t}</span>
+            {(entity.tags || []).map((tag, i) => <span key={i} className="tag">{tag}</span>)}
+          </div>
+        </div>
+        <div className="entity-actions">
+          {!editMode && <button className="btn primary" onClick={() => setEditMode(true)}>Edit</button>}
+          {editMode && <button className="btn primary" onClick={() => setEditMode(false)}>Done</button>}
+          {!editMode && <button className="btn danger" onClick={onDelete}>Delete</button>}
+        </div>
+      </div>
+
+      {t === 'npc' && <NPCView entity={entity} editMode={editMode} update={update} data={data} findEntity={findEntity} onNavigate={onNavigate} upsertRelationship={upsertRelationship} deleteRelationship={deleteRelationship} />}
+      {t === 'faction' && <FactionView entity={entity} editMode={editMode} update={update} data={data} findEntity={findEntity} onNavigate={onNavigate} upsertRelationship={upsertRelationship} deleteRelationship={deleteRelationship} />}
+      {t === 'location' && <LocationView entity={entity} editMode={editMode} update={update} data={data} findEntity={findEntity} onNavigate={onNavigate} />}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   NPC VIEW
+   ═══════════════════════════════════════════ */
+function NPCView({ entity, editMode, update, data, findEntity, onNavigate, upsertRelationship, deleteRelationship }) {
+  const e = entity;
+  return (
+    <>
+      <Section title="Identity">
+        <div className="grid-2">
+          <Field label="Race" value={e.race} editMode={editMode} onChange={v => update('race', v)} />
+          <Field label="Age" value={e.age} editMode={editMode} onChange={v => update('age', v)} />
+          <Field label="Origin" value={e.origin} editMode={editMode} onChange={v => update('origin', v)} />
+          <Field label="Status" value={e.status} editMode={editMode} onChange={v => update('status', v)} />
+          <LinkField label="Current Location" value={e.currentLocation} options={data.locations} editMode={editMode} onChange={v => update('currentLocation', v)} onNavigate={onNavigate} findEntity={findEntity} />
+          <Field label="Wealth Tier" value={e.wealthTier} editMode={editMode} onChange={v => update('wealthTier', v)} />
+        </div>
+      </Section>
+
+      <Section title="Reputation">
+        <LongField label="Public Reputation" value={e.publicReputation} editMode={editMode} onChange={v => update('publicReputation', v)} />
+        <LongField label="True Nature" value={e.trueNature} editMode={editMode} onChange={v => update('trueNature', v)} />
+      </Section>
+
+      <Section title="Backstory">
+        <LongField label="" value={e.backstory} editMode={editMode} onChange={v => update('backstory', v)} bigText />
+      </Section>
+
+      <Section title="Psychology">
+        <LongField label="Ambitions" value={e.ambitions} editMode={editMode} onChange={v => update('ambitions', v)} />
+        <LongField label="Motivations" value={e.motivations} editMode={editMode} onChange={v => update('motivations', v)} />
+        <LongField label="Fears" value={e.fears} editMode={editMode} onChange={v => update('fears', v)} />
+        <LongField label="Values" value={e.values} editMode={editMode} onChange={v => update('values', v)} />
+        <LongField label="Voice / Mannerism" value={e.voiceNotes} editMode={editMode} onChange={v => update('voiceNotes', v)} />
+      </Section>
+
+      <Section title="Capabilities & Knowledge">
+        <LongField label="Capabilities" value={e.capabilities} editMode={editMode} onChange={v => update('capabilities', v)} />
+        <LongField label="Secrets Known" value={e.secretsKnown} editMode={editMode} onChange={v => update('secretsKnown', v)} />
+      </Section>
+
+      <Section title="Assets">
+        <LongField label="Items Carried" value={e.itemsCarried} editMode={editMode} onChange={v => update('itemsCarried', v)} />
+        <LongField label="Items Owned" value={e.itemsOwned} editMode={editMode} onChange={v => update('itemsOwned', v)} />
+        <LongField label="Estates / Properties" value={e.estates} editMode={editMode} onChange={v => update('estates', v)} />
+      </Section>
+
+      <RelationshipsSection entity={entity} data={data} findEntity={findEntity} onNavigate={onNavigate} editMode={editMode} upsertRelationship={upsertRelationship} deleteRelationship={deleteRelationship} />
+
+      <Section title="Party History">
+        <LongField label="PC Interactions Log" value={e.pcHistory} editMode={editMode} onChange={v => update('pcHistory', v)} />
+      </Section>
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   FACTION VIEW
+   ═══════════════════════════════════════════ */
+function FactionView({ entity, editMode, update, data, findEntity, onNavigate, upsertRelationship, deleteRelationship }) {
+  const e = entity;
+  return (
+    <>
+      <Section title="Identity">
+        <div className="grid-2">
+          <LinkField label="Headquarters" value={e.headquarters} options={data.locations} editMode={editMode} onChange={v => update('headquarters', v)} onNavigate={onNavigate} findEntity={findEntity} />
+          <LinkField label="Leadership" value={e.leadership} options={data.npcs} editMode={editMode} onChange={v => update('leadership', v)} onNavigate={onNavigate} findEntity={findEntity} />
+          <Field label="Territory" value={e.territory} editMode={editMode} onChange={v => update('territory', v)} />
+          <Field label="Sigil" value={e.sigil} editMode={editMode} onChange={v => update('sigil', v)} />
+        </div>
+      </Section>
+
+      <Section title="Face & Doctrine">
+        <LongField label="Public Face" value={e.publicFace} editMode={editMode} onChange={v => update('publicFace', v)} />
+        <LongField label="Stated Goals" value={e.stated} editMode={editMode} onChange={v => update('stated', v)} />
+        <LongField label="True Goals" value={e.trueGoals} editMode={editMode} onChange={v => update('trueGoals', v)} />
+        <LongField label="Methods" value={e.methods} editMode={editMode} onChange={v => update('methods', v)} />
+        <LongField label="Taboos" value={e.taboos} editMode={editMode} onChange={v => update('taboos', v)} />
+      </Section>
+
+      <Section title="Structure & Power">
+        <LongField label="Structure Notes" value={e.structureNotes} editMode={editMode} onChange={v => update('structureNotes', v)} />
+        <div className="grid-2">
+          <Field label="Treasury" value={e.treasury} editMode={editMode} onChange={v => update('treasury', v)} />
+          <Field label="Military" value={e.military} editMode={editMode} onChange={v => update('military', v)} />
+        </div>
+        <LongField label="Assets" value={e.assets} editMode={editMode} onChange={v => update('assets', v)} />
+      </Section>
+
+      <Section title="Active Clocks (placeholder)">
+        <LongField label="" value={e.clocks} editMode={editMode} onChange={v => update('clocks', v)} />
+      </Section>
+
+      <RelationshipsSection entity={entity} data={data} findEntity={findEntity} onNavigate={onNavigate} editMode={editMode} upsertRelationship={upsertRelationship} deleteRelationship={deleteRelationship} />
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   LOCATION VIEW
+   ═══════════════════════════════════════════ */
+function LocationView({ entity, editMode, update, data, findEntity, onNavigate }) {
+  const e = entity;
+  return (
+    <>
+      <Section title="Identity">
+        <div className="grid-2">
+          <Field label="Kind" value={e.kind} editMode={editMode} onChange={v => update('kind', v)} />
+          <Field label="Region" value={e.region} editMode={editMode} onChange={v => update('region', v)} />
+          <LinkField label="Parent Location" value={e.parent} options={data.locations.filter(l => l.id !== entity.id)} editMode={editMode} onChange={v => update('parent', v)} onNavigate={onNavigate} findEntity={findEntity} />
+        </div>
+      </Section>
+
+      <Section title="Description">
+        <LongField label="" value={e.description} editMode={editMode} onChange={v => update('description', v)} bigText />
+      </Section>
+
+      <Section title="Current State">
+        <LongField label="" value={e.currentState} editMode={editMode} onChange={v => update('currentState', v)} />
+      </Section>
+
+      <Section title="Inhabitants & Connected Entities">
+        <ConnectedEntities locationId={entity.id} data={data} findEntity={findEntity} onNavigate={onNavigate} />
+      </Section>
+    </>
+  );
+}
+
+function ConnectedEntities({ locationId, data, findEntity, onNavigate }) {
+  const here = data.npcs.filter(n => n.currentLocation === locationId);
+  const hq = data.factions.filter(f => f.headquarters === locationId);
+  const children = data.locations.filter(l => l.parent === locationId);
+  if (!here.length && !hq.length && !children.length) {
+    return <div style={{color: 'var(--ink-mute)', fontStyle: 'italic'}}>No connected entities yet.</div>;
+  }
+  return (
+    <>
+      {here.length > 0 && <SubGroup title="NPCs here" items={here} kind="npc" onNavigate={onNavigate} />}
+      {hq.length > 0 && <SubGroup title="Factions headquartered" items={hq} kind="faction" onNavigate={onNavigate} />}
+      {children.length > 0 && <SubGroup title="Sub-locations" items={children} kind="location" onNavigate={onNavigate} />}
+    </>
+  );
+}
+function SubGroup({ title, items, kind, onNavigate }) {
+  return (
+    <div style={{marginBottom: 14}}>
+      <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8}}>{title}</div>
+      <div className="chips">
+        {items.map(item => (
+          <div key={item.id} className="chip" onClick={() => onNavigate(item.id)}>
+            <div className={`chip-dot ${kind}`} />
+            <span className="chip-name">{item.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   RELATIONSHIPS
+   ═══════════════════════════════════════════ */
+function RelationshipsSection({ entity, data, findEntity, onNavigate, editMode, upsertRelationship, deleteRelationship }) {
+  const outbound = data.relationships.filter(r => r.from === entity.id);
+  const inbound = data.relationships.filter(r => r.to === entity.id);
+  const [adding, setAdding] = useState(false);
+
+  return (
+    <div className="section">
+      <div className="section-header">
+        <h3>Relationships</h3>
+        <div className="rule" />
+        {editMode && !adding && (
+          <button className="btn" onClick={() => setAdding(true)}>+ Add</button>
+        )}
+      </div>
+
+      {editMode && adding && (
+        <RelationshipEditor
+          fromId={entity.id}
+          data={data}
+          onSave={(rel) => { upsertRelationship(rel); setAdding(false); }}
+          onCancel={() => setAdding(false)}
+        />
+      )}
+
+      {outbound.length > 0 && (
+        <div style={{marginBottom: 16}}>
+          <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8}}>Outbound</div>
+          <div className="chips">
+            {outbound.map(r => {
+              const target = findEntity(r.to);
+              if (!target) return null;
+              const tType = typeOf(r.to);
+              return (
+                <div key={r.id} className="chip" onClick={() => onNavigate(r.to)}>
+                  <div className={`chip-dot ${tType}`} />
+                  <span className="chip-name">{target.name}</span>
+                  <span className={`chip-rel ${r.type === 'allied' ? 'allied' : r.type === 'rival' ? 'rival' : r.type === 'loyal-to' ? 'loyal' : ''}`}>
+                    {r.type}
+                  </span>
+                  {editMode && <button className="rel-remove" onClick={e => { e.stopPropagation(); deleteRelationship(r.id); }}>×</button>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {inbound.length > 0 && (
+        <div>
+          <div style={{fontFamily: 'JetBrains Mono, monospace', fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-mute)', marginBottom: 8}}>Inbound</div>
+          <div className="chips">
+            {inbound.map(r => {
+              const source = findEntity(r.from);
+              if (!source) return null;
+              const sType = typeOf(r.from);
+              return (
+                <div key={r.id} className="chip" onClick={() => onNavigate(r.from)}>
+                  <div className={`chip-dot ${sType}`} />
+                  <span className="chip-name">{source.name}</span>
+                  <span className="chip-rel">{r.type} →</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {outbound.length === 0 && inbound.length === 0 && !adding && (
+        <div style={{color: 'var(--ink-mute)', fontStyle: 'italic'}}>No relationships yet.</div>
+      )}
+    </div>
+  );
+}
+
+function RelationshipEditor({ fromId, data, onSave, onCancel }) {
+  const [toId, setToId] = useState('');
+  const [type, setType] = useState('allied');
+  const [disposition, setDisposition] = useState(0);
+  const [customType, setCustomType] = useState('');
+
+  const allOptions = [
+    ...data.npcs.map(e => ({ id: e.id, name: e.name, t: 'npc' })),
+    ...data.factions.map(e => ({ id: e.id, name: e.name, t: 'faction' })),
+    ...data.locations.map(e => ({ id: e.id, name: e.name, t: 'location' })),
+  ].filter(o => o.id !== fromId);
+
+  return (
+    <div style={{background: 'var(--bg-3)', border: '1px solid var(--line-2)', padding: 14, borderRadius: 3, marginBottom: 16}}>
+      <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr 100px', gap: 10, alignItems: 'end'}}>
+        <label className="field-edit">
+          <span className="field-label">Target</span>
+          <select className="edit" value={toId} onChange={e => setToId(e.target.value)}>
+            <option value="">— select —</option>
+            {allOptions.map(o => <option key={o.id} value={o.id}>{o.name} ({o.t})</option>)}
+          </select>
+        </label>
+        <label className="field-edit">
+          <span className="field-label">Relationship</span>
+          <select className="edit" value={type} onChange={e => setType(e.target.value)}>
+            {RELATIONSHIP_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </label>
+        <label className="field-edit">
+          <span className="field-label">Disposition</span>
+          <input className="edit" type="number" min="-100" max="100" value={disposition} onChange={e => setDisposition(parseInt(e.target.value) || 0)} />
+        </label>
+      </div>
+      {type === 'custom' && (
+        <label className="field-edit" style={{marginTop: 10}}>
+          <span className="field-label">Custom type</span>
+          <input className="edit" value={customType} onChange={e => setCustomType(e.target.value)} placeholder="e.g. estranged-uncle-of" />
+        </label>
+      )}
+      <div style={{display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12}}>
+        <button className="btn" onClick={onCancel}>Cancel</button>
+        <button
+          className="btn primary"
+          onClick={() => {
+            if (!toId) return;
+            onSave({ from: fromId, to: toId, type: type === 'custom' ? customType : type, disposition });
+          }}
+        >Save</button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   PRIMITIVE FIELD COMPONENTS
+   ═══════════════════════════════════════════ */
+function Section({ title, children }) {
+  return (
+    <div className="section">
+      <div className="section-header">
+        <h3>{title}</h3>
+        <div className="rule" />
+      </div>
+      <div className="section-body">{children}</div>
+    </div>
+  );
+}
+
+function Field({ label, value, editMode, onChange }) {
+  return (
+    <div className="field">
+      <span className="field-label">{label}</span>
+      {editMode ? (
+        <input className="edit" value={value || ''} onChange={e => onChange(e.target.value)} />
+      ) : (
+        <span className={`field-value ${!value ? 'empty' : ''}`}>{value || '—'}</span>
+      )}
+    </div>
+  );
+}
+
+function LinkField({ label, value, options, editMode, onChange, onNavigate, findEntity }) {
+  const target = value ? findEntity(value) : null;
+  return (
+    <div className="field">
+      <span className="field-label">{label}</span>
+      {editMode ? (
+        <select className="edit" value={value || ''} onChange={e => onChange(e.target.value)}>
+          <option value="">— none —</option>
+          {options.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+        </select>
+      ) : target ? (
+        <span className="inline-link" onClick={() => onNavigate(target.id)}>{target.name}</span>
+      ) : (
+        <span className="field-value empty">—</span>
+      )}
+    </div>
+  );
+}
+
+function LongField({ label, value, editMode, onChange, bigText }) {
+  return (
+    <div style={{marginBottom: 14}}>
+      {label && <div className="field-label" style={{marginBottom: 6}}>{label}</div>}
+      {editMode ? (
+        <textarea
+          className={`edit ${bigText ? 'long' : ''}`}
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+        />
+      ) : value ? (
+        <div style={{whiteSpace: 'pre-wrap'}}>{value}</div>
+      ) : (
+        <span className="field-value empty">—</span>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   MODALS
+   ═══════════════════════════════════════════ */
+function Modal({ children, onClose }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>{children}</div>
+    </div>
+  );
+}
+
+function CreateForm({ type, onCreate, onCancel }) {
+  const [name, setName] = useState('');
+  const labels = { npc: 'NPC', faction: 'Faction', location: 'Location' };
+  return (
+    <>
+      <h2>New {labels[type]}</h2>
+      <div className="modal-form">
+        <label className="field-edit">
+          <span className="field-label">Name</span>
+          <input className="edit" autoFocus value={name} onChange={e => setName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && name.trim()) onCreate(name.trim()); }} />
+        </label>
+      </div>
+      <div className="modal-row">
+        <button className="btn" onClick={onCancel}>Cancel</button>
+        <button className="btn primary" disabled={!name.trim()} onClick={() => onCreate(name.trim())}>Create</button>
+      </div>
+    </>
+  );
+}
+
+function ConfirmDelete({ name, onConfirm, onCancel }) {
+  return (
+    <>
+      <h2>Delete <em>{name}</em>?</h2>
+      <p style={{color: 'var(--ink-dim)'}}>This will also remove all relationships connected to this entity. This cannot be undone.</p>
+      <div className="modal-row">
+        <button className="btn" onClick={onCancel}>Cancel</button>
+        <button className="btn danger" onClick={onConfirm}>Delete</button>
+      </div>
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+
+</body>
+</html>
